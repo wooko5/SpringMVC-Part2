@@ -18,8 +18,10 @@ public class TestDataInit {
      */
     @PostConstruct
     public void init() {
-        itemRepository.save(new Item("itemA", 10000, 10));
-        itemRepository.save(new Item("itemB", 20000, 20));
+        itemRepository.save(new Item("Mango", 4900, 10));
+        itemRepository.save(new Item("Apple", 5500, 15));
+        itemRepository.save(new Item("Banana", 10000, 17));
+        itemRepository.save(new Item("Orange", 18900, 30));
     }
 
 }
