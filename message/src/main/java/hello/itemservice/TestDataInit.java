@@ -23,5 +23,4 @@ public class TestDataInit {
         itemRepository.save(new Item("Banana", 10000, 17));
         itemRepository.save(new Item("Orange", 18900, 30));
     }
-
 }
