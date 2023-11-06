@@ -115,26 +115,25 @@ public class ValidationItemControllerV2 {
     public String addItemV3(@ModelAttribute Item item, BindingResult bindingResult, RedirectAttributes redirectAttributes) {
 
         if (!StringUtils.hasText(item.getItemName())) {
-            bindingResult.addError(new FieldError("item", "itemName", item.getItemName(), false, new String[]{"required.item.itemName"}, null, null));
+            bindingResult.addError(new FieldError("item", "itemName", item.getItemName(),
+                    false, new String[]{"required.item.itemName"}, null, null));
         }
 
-        if (item.getPrice() == null || item.getPrice() < 1000 || item.getPrice() >
-                1000000) {
+        if (item.getPrice() == null || item.getPrice() < 1000 || item.getPrice() > 1000000) {
             bindingResult.addError(new FieldError("item", "price", item.getPrice(),
                     false, new String[]{"range.item.price"}, new Object[]{1000, 1000000}, null));
         }
         if (item.getQuantity() == null || item.getQuantity() > 10000) {
-            bindingResult.addError(new FieldError("item", "quantity",
-                    item.getQuantity(), false, new String[]{"max.item.quantity"}, new Object[]
-                    {9999}, null));
+            bindingResult.addError(new FieldError("item", "quantity", item.getQuantity(),
+                    false, new String[]{"max.item.quantity"}, new Object[]{9999}, null));
         }
 
         //특정 필드 예외가 아닌 전체 예외
         if (item.getPrice() != null && item.getQuantity() != null) {
             int resultPrice = item.getPrice() * item.getQuantity();
             if (resultPrice < 10000) {
-                bindingResult.addError(new ObjectError("item", new String[]
-                        {"totalPriceMin"}, new Object[]{10000, resultPrice}, null));
+                bindingResult.addError(new ObjectError("item", new String[]{"totalPriceMin"},
+                        new Object[]{10000, resultPrice}, null));
             }
         }
         if (bindingResult.hasErrors()) {
