@@ -157,6 +157,7 @@ public class ValidationItemControllerV2 {
         log.info("======================= START =======================================");
         log.info("objectName = {}", bindingResult.getObjectName());
         log.info("target = {}", bindingResult.getTarget());
+        log.info("model = {}", bindingResult.getModel().toString());
         log.info("======================= END =========================================");
 
         if (!StringUtils.hasText(item.getItemName())) {
