@@ -10,6 +10,8 @@ import org.springframework.util.StringUtils;
 import org.springframework.validation.BindingResult;
 import org.springframework.validation.FieldError;
 import org.springframework.validation.ObjectError;
+import org.springframework.validation.annotation.Validated;
+import org.springframework.web.bind.WebDataBinder;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.web.servlet.mvc.support.RedirectAttributes;
 
@@ -23,6 +25,12 @@ public class ValidationItemControllerV2 {
 
     private final ItemRepository itemRepository;
     private final ItemValidator itemValidator;
+
+    @InitBinder
+    public void init(WebDataBinder webDataBinder) {
+        log.info("init binder == {}", webDataBinder);
+        webDataBinder.addValidators(itemValidator);
+    }
 
     @GetMapping
     public String items(Model model) {
@@ -44,7 +52,7 @@ public class ValidationItemControllerV2 {
         return "validation/v2/addForm";
     }
 
-//    @PostMapping("/add")
+    //    @PostMapping("/add")
     public String addItemV1(@ModelAttribute Item item, BindingResult bindingResult, RedirectAttributes redirectAttributes) {
 
         if (!StringUtils.hasText(item.getItemName())) {
@@ -66,19 +74,10 @@ public class ValidationItemControllerV2 {
             }
         }
 
-        if (bindingResult.hasErrors()) {
-            log.info("errors = {}", bindingResult);
-            return "validation/v2/addForm";
-        }
-
-        // 성공로직
-        Item savedItem = itemRepository.save(item);
-        redirectAttributes.addAttribute("itemId", savedItem.getId());
-        redirectAttributes.addAttribute("status", true);
-        return "redirect:/validation/v2/items/{itemId}";
+        return saveItem(item, bindingResult, redirectAttributes);
     }
 
-//    @PostMapping("/add")
+    //    @PostMapping("/add")
     public String addItemV2(@ModelAttribute Item item, BindingResult bindingResult, RedirectAttributes redirectAttributes) {
 
         if (!StringUtils.hasText(item.getItemName())) {
@@ -100,20 +99,16 @@ public class ValidationItemControllerV2 {
             }
         }
 
-        if (bindingResult.hasErrors()) {
-            log.info("errors = {}", bindingResult);
-            return "validation/v2/addForm";
-        }
-
-        // 성공로직
-        Item savedItem = itemRepository.save(item);
-        redirectAttributes.addAttribute("itemId", savedItem.getId());
-        redirectAttributes.addAttribute("status", true);
-        return "redirect:/validation/v2/items/{itemId}";
+        return saveItem(item, bindingResult, redirectAttributes);
     }
 
-//    @PostMapping("/add")
+    //    @PostMapping("/add")
     public String addItemV3(@ModelAttribute Item item, BindingResult bindingResult, RedirectAttributes redirectAttributes) {
+
+        log.info("======================= START =======================================");
+        log.info("objectName = {}", bindingResult.getObjectName());
+        log.info("target = {}", bindingResult.getTarget());
+        log.info("======================= END =========================================");
 
         if (!StringUtils.hasText(item.getItemName())) {
             bindingResult.addError(new FieldError("item", "itemName", item.getItemName(),
@@ -137,24 +132,11 @@ public class ValidationItemControllerV2 {
                         new Object[]{10000, resultPrice}, null));
             }
         }
-        if (bindingResult.hasErrors()) {
-            log.info("errors={}", bindingResult);
-            return "validation/v2/addForm";
-        }
 
-        log.info("======================= START =======================================");
-        log.info("objectName = {}", bindingResult.getObjectName());
-        log.info("target = {}", bindingResult.getTarget());
-        log.info("======================= END =========================================");
-
-        //성공 로직
-        Item savedItem = itemRepository.save(item);
-        redirectAttributes.addAttribute("itemId", savedItem.getId());
-        redirectAttributes.addAttribute("status", true);
-        return "redirect:/validation/v2/items/{itemId}";
+        return saveItem(item, bindingResult, redirectAttributes);
     }
 
-//    @PostMapping("/add")
+    //    @PostMapping("/add")
     public String addItemV4(@ModelAttribute Item item, BindingResult bindingResult, RedirectAttributes redirectAttributes) {
 
         log.info("======================= START =======================================");
@@ -170,6 +152,7 @@ public class ValidationItemControllerV2 {
         if (item.getPrice() == null || item.getPrice() < 1000 || item.getPrice() > 1000000) {
             bindingResult.rejectValue("price", "range", new Object[]{1000, 1000000}, null);
         }
+
         if (item.getQuantity() == null || item.getQuantity() > 10000) {
             bindingResult.rejectValue("quantity", "max", new Object[]{9999}, null);
         }
@@ -182,23 +165,26 @@ public class ValidationItemControllerV2 {
             }
         }
 
-        if (bindingResult.hasErrors()) {
-            log.info("errors={}", bindingResult);
-            return "validation/v2/addForm";
-        }
-
-        //성공 로직
-        Item savedItem = itemRepository.save(item);
-        redirectAttributes.addAttribute("itemId", savedItem.getId());
-        redirectAttributes.addAttribute("status", true);
-        return "redirect:/validation/v2/items/{itemId}";
+        return saveItem(item, bindingResult, redirectAttributes);
     }
 
-    @PostMapping("/add")
+    //    @PostMapping("/add")
     public String addItemV5(@ModelAttribute Item item, BindingResult bindingResult, RedirectAttributes redirectAttributes) {
 
         itemValidator.validate(item, bindingResult);
 
+        return saveItem(item, bindingResult, redirectAttributes);
+    }
+
+    @PostMapping("/add")
+    public String addItemV6(@Validated @ModelAttribute Item item, BindingResult bindingResult, RedirectAttributes redirectAttributes) {
+        return saveItem(item, bindingResult, redirectAttributes);
+    }
+
+    /**
+     * 기존의 오류/정상 일때 저장 로직을 메소드로 추출
+     */
+    private String saveItem(Item item, BindingResult bindingResult, RedirectAttributes redirectAttributes) {
         if (bindingResult.hasErrors()) {
             log.info("errors == {}", bindingResult);
             return "validation/v2/addForm";
@@ -210,7 +196,6 @@ public class ValidationItemControllerV2 {
         redirectAttributes.addAttribute("status", true);
         return "redirect:/validation/v2/items/{itemId}";
     }
-
 
     @GetMapping("/{itemId}/edit")
     public String editForm(@PathVariable Long itemId, Model model) {
